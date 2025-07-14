@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Ultimate Defense Reborn Color Palette */
+    --primary: 262 83% 58%; /* #8B5CF6 - Purple */
+    --accent: 38 92% 50%; /* #F59E0B - Amber */
+    --background: 222 84% 5%; /* #0F172A - Dark Blue */
+    --dark-mode: 222 84% 2%; /* #020617 - Darker Blue */
+    
+    /* Game-specific colors */
+    --grass: 84 100% 63%; /* #7CFC00 - Vert clair pour l'herbe */
+    --path: 39 56% 58%; /* #CD853F - Beige sable pour le chemin */
+    --hero-archer: 120 50% 50%; /* Green for Archer */
+    --hero-warrior: 0 70% 50%; /* Red for Warrior */
+    --hero-mage: 240 70% 60%; /* Blue for Mage */
+    --enemy: 15 80% 50%; /* Orange for enemies */
+    --health-bar: 120 100% 40%; /* Health bar green */
+    --damage-text: 0 100% 60%; /* Damage text red */
+    --critical-text: 45 100% 50%; /* Critical damage yellow */
+    
+    /* UI Colors */
+    --foreground: 210 40% 98%;
+    --card: 222 84% 5%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent-foreground: 222 84% 5%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 262 83% 58%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans;
+
+    font-family: Inter, sans-serif;
+  }
+  
+  /* Grille de jeu harmonisée */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
+    gap: 0; /* Suppression du gap pour éviter les espaces */
+    background: hsl(var(--border));
+    border: 2px solid hsl(var(--border));
+    border-radius: 8px;
+    padding: 0; /* Suppression du padding */
+  }
+  
+  .tile {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 0.5px solid hsl(var(--border) / 30%); /* Bordure fine pour délimiter */
+  }
+  
+  .tile-grass {
+    background: hsl(var(--grass));
+    background-image: 
+      radial-gradient(circle at 20% 20%, rgb(255 255 255 / 10%) 1px, transparent 1px),
+      radial-gradient(circle at 80% 80%, rgb(255 255 255 / 10%) 1px, transparent 1px);
+    background-size: 10px 10px;
+  }
+  
+  .tile-grass:hover {
+    background: hsl(var(--grass) / 80%);
+    transform: scale(0.95);
+    box-shadow: inset 0 0 10px rgb(0 0 0 / 20%);
+  }
+  
+  .tile-path {
+    background: hsl(var(--path));
+
+    /* Couleur unie sans motif quadrillé */
+  }
+  
+  .tile-path:hover {
+    background: hsl(var(--path) / 80%);
+    transform: scale(0.95);
+    box-shadow: inset 0 0 10px rgb(0 0 0 / 20%);
+  }
+  
+  .tile-range-valid {
+    background: rgb(255 255 255 / 30%) !important;
+    box-shadow: 
+      inset 0 0 0 2px rgb(255 255 255 / 60%),
+      0 0 10px rgb(255 255 255 / 30%);
+    z-index: 5;
+    animation: range-pulse 2s ease-in-out infinite;
+  }
+
+  .tile-range-invalid {
+    background: rgb(220 38 38 / 40%) !important;
+    box-shadow: 
+      inset 0 0 0 2px rgb(220 38 38 / 80%),
+      0 0 10px rgb(220 38 38 / 30%);
+    z-index: 5;
+  }
+
+  .tile-ghost-preview {
+    position: relative;
+    z-index: 6;
+    animation: ghost-glow 1s ease-in-out infinite alternate;
+  }
+
+  .hero-ghost {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgb(0 0 0 / 80%);
+    border: 2px solid rgb(135 206 235 / 80%);
+    background: rgb(135 206 235 / 40%);
+    pointer-events: none;
+    z-index: 10;
+    animation: ghost-float 2s ease-in-out infinite;
+  }
+  
+  .hero {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgb(0 0 0 / 80%);
+    border: 2px solid rgb(255 255 255 / 30%);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: visible;
+  }
+  
+  .hero:hover {
+    transform: scale(1.1);
+    border-color: rgb(255 255 255 / 60%);
+    box-shadow: 0 0 15px rgb(255 255 255 / 40%);
+  }
+  
+  .hero-archer {
+    background: linear-gradient(135deg, hsl(var(--hero-archer)), hsl(var(--hero-archer) / 80%));
+    box-shadow: 0 0 10px rgb(0 128 0 / 30%);
+  }
+  
+  .hero-warrior {
+    background: linear-gradient(135deg, hsl(var(--hero-warrior)), hsl(var(--hero-warrior) / 80%));
+    box-shadow: 0 0 10px rgb(255 0 0 / 30%);
+  }
+  
+  .hero-mage {
+    background: linear-gradient(135deg, hsl(var(--hero-mage)), hsl(var(--hero-mage) / 80%));
+    box-shadow: 0 0 10px rgb(0 0 255 / 30%);
+  }
+  
+  .enemy {
+    width: 70%;
+    height: 70%;
+    background: hsl(var(--enemy));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    position: relative;
+  }
+  
+  .health-bar {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120%;
+    height: 4px;
+    background: rgb(0 0 0 / 30%);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .health-fill {
+    height: 100%;
+    background: hsl(var(--health-bar));
+    transition: width 0.3s ease;
+  }
+  
+  .damage-text {
+    position: absolute;
+    color: hsl(var(--damage-text));
+    font-weight: bold;
+    font-size: 14px;
+    pointer-events: none;
+    animation: damage-float 1s ease-out forwards;
+  }
+  
+  .damage-text.critical {
+    color: hsl(var(--critical-text));
+    font-size: 16px;
+    text-shadow: 0 0 4px currentcolor;
+  }
+  
+  .ui-panel {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    padding: 16px;
+  }
+  
+  .hero-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .hero-button:hover {
+    transform: scale(1.05);
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 15px hsl(var(--primary) / 30%);
+  }
+  
+  .hero-button.selected {
+    border-color: hsl(var(--accent));
+    box-shadow: 0 0 20px hsl(var(--accent) / 50%);
+    animation: selected-glow 2s ease-in-out infinite;
+  }
+  
+  .hero-button.archer {
+    background: linear-gradient(135deg, hsl(var(--hero-archer)), hsl(var(--hero-archer) / 80%));
+  }
+  
+  .hero-button.warrior {
+    background: linear-gradient(135deg, hsl(var(--hero-warrior)), hsl(var(--hero-warrior) / 80%));
+  }
+  
+  .hero-button.mage {
+    background: linear-gradient(135deg, hsl(var(--hero-mage)), hsl(var(--hero-mage) / 80%));
+  }
+
+  /* Animations */
+  @keyframes range-pulse {
+    0%, 100% {
+      box-shadow: 
+        inset 0 0 0 2px rgb(255 255 255 / 60%),
+        0 0 10px rgb(255 255 255 / 30%);
+    }
+
+    50% {
+      box-shadow: 
+        inset 0 0 0 2px rgb(255 255 255 / 80%),
+        0 0 20px rgb(255 255 255 / 50%);
+    }
+  }
+
+  @keyframes ghost-glow {
+    0% {
+      box-shadow: 0 0 10px rgb(135 206 235 / 30%);
+    }
+
+    100% {
+      box-shadow: 0 0 20px rgb(135 206 235 / 60%);
+    }
+  }
+
+  @keyframes ghost-float {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+  }
+
+  @keyframes selected-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(var(--accent) / 50%);
+    }
+
+    50% {
+      box-shadow: 0 0 30px hsl(var(--accent) / 70%);
+    }
+  }
+
+  @keyframes damage-float {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 100%;
+    }
+
+    100% {
+      transform: translateY(-30px) scale(1.2);
+      opacity: 0%;
+    }
+  }
+
+  /* Effets de particules pour les attaques */
+  .attack-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: currentcolor;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particle-burst 0.5s ease-out forwards;
+  }
+
+  @keyframes particle-burst {
+    0% {
+      transform: scale(1) translate(0, 0);
+      opacity: 100%;
+    }
+
+    100% {
+      transform: scale(0) translate(var(--particle-x, 0), var(--particle-y, 0));
+      opacity: 0%;
+    }
+  }
+
+  /* Amélioration des transitions pour les ennemis */
+  .enemy-container {
+    transition: transform 0.05s linear;
+  }
+
+  /* Effet de pulsation pour les ennemis blessés */
+  .enemy-damaged {
+    animation: damage-pulse 0.3s ease-in-out;
+  }
+
+  @keyframes damage-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+  }
+
+  /* Effet de mort pour les ennemis */
+  .enemy-dying {
+    animation: enemy-death 0.5s ease-in-out forwards;
+  }
+
+  @keyframes enemy-death {
+    0% {
+      transform: scale(1) rotate(0deg);
+      opacity: 100%;
+    }
+
+    100% {
+      transform: scale(0) rotate(180deg);
+      opacity: 0%;
+    }
+  }
+}
